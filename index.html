@@ -1,0 +1,1364 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BWR MEGA-Quiz: Leistungserstellung</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .quiz-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+            max-width: 1000px;
+            width: 100%;
+            padding: 40px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 36px;
+            font-weight: 900;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .question-type-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-size: 15px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .progress-container {
+            margin-bottom: 30px;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .question-counter {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 18px;
+        }
+
+        .score-counter {
+            background: #764ba2;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .progress-bar {
+            background: #e0e0e0;
+            height: 12px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            height: 100%;
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .question-section {
+            margin-bottom: 30px;
+        }
+
+        .question-text {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 25px;
+            line-height: 1.6;
+            padding: 25px;
+            background: #f8f9fa;
+            border-left: 6px solid #667eea;
+            border-radius: 12px;
+        }
+
+        /* Multiple Choice */
+        .answers {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .answer-btn {
+            background: white;
+            border: 3px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 18px 25px;
+            font-size: 17px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            font-weight: 500;
+        }
+
+        .answer-btn:hover:not(:disabled) {
+            border-color: #667eea;
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .answer-btn.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .answer-btn.correct {
+            background: #27ae60;
+            color: white;
+            border-color: #27ae60;
+            animation: pulse 0.5s;
+        }
+
+        .answer-btn.incorrect {
+            background: #e74c3c;
+            color: white;
+            border-color: #e74c3c;
+            animation: shake 0.5s;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        /* Multi-Select */
+        .multi-select-btn {
+            position: relative;
+            padding-left: 50px;
+        }
+
+        .multi-select-btn::before {
+            content: '☐';
+            position: absolute;
+            left: 20px;
+            font-size: 24px;
+            color: #667eea;
+        }
+
+        .multi-select-btn.selected::before {
+            content: '☑';
+        }
+
+        /* Lückentext */
+        .gap-text-container {
+            font-size: 20px;
+            line-height: 2.2;
+            color: #333;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .gap-input {
+            display: inline-block;
+            border: none;
+            border-bottom: 3px solid #667eea;
+            padding: 8px 15px;
+            font-size: 19px;
+            font-weight: bold;
+            color: #667eea;
+            background: white;
+            border-radius: 8px;
+            margin: 0 8px;
+            min-width: 180px;
+            text-align: center;
+        }
+
+        .gap-input:focus {
+            outline: none;
+            background: #e8eaf6;
+            border-bottom-color: #764ba2;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+        }
+
+        .gap-input.correct {
+            background: #d4edda;
+            border-bottom-color: #27ae60;
+            color: #155724;
+        }
+
+        .gap-input.incorrect {
+            background: #f8d7da;
+            border-bottom-color: #e74c3c;
+            color: #721c24;
+        }
+
+        /* Zuordnung */
+        .matching-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .matching-column {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+        }
+
+        .matching-column h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .matching-item {
+            background: white;
+            border: 3px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 18px;
+            margin-bottom: 12px;
+            cursor: move;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 16px;
+        }
+
+        .matching-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+            transform: scale(1.02);
+        }
+
+        .matching-item.dragging {
+            opacity: 0.4;
+        }
+
+        .drop-zone {
+            background: white;
+            border: 3px dashed #ccc;
+            border-radius: 10px;
+            padding: 18px;
+            margin-bottom: 12px;
+            min-height: 70px;
+            transition: all 0.3s ease;
+        }
+
+        .drop-zone.drag-over {
+            background: #e8eaf6;
+            border-color: #667eea;
+            transform: scale(1.02);
+        }
+
+        .drop-zone.filled {
+            border-style: solid;
+            border-color: #667eea;
+        }
+
+        .drop-zone.correct {
+            border-color: #27ae60;
+            background: #d4edda;
+        }
+
+        .drop-zone.incorrect {
+            border-color: #e74c3c;
+            background: #f8d7da;
+        }
+
+        .drop-label {
+            font-size: 15px;
+            color: #666;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        /* Sortieren */
+        .sorting-container {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+        }
+
+        .sorting-item {
+            background: white;
+            border: 3px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 12px;
+            cursor: move;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 17px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .sorting-item::before {
+            content: '☰';
+            font-size: 24px;
+            color: #999;
+        }
+
+        .sorting-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .sorting-item.dragging {
+            opacity: 0.4;
+        }
+
+        .sorting-item.correct {
+            border-color: #27ae60;
+            background: #d4edda;
+        }
+
+        .sorting-item.incorrect {
+            border-color: #e74c3c;
+            background: #f8d7da;
+        }
+
+        /* Richtig/Falsch */
+        .true-false-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 25px;
+        }
+
+        .true-false-btn {
+            flex: 1;
+            max-width: 250px;
+            padding: 25px;
+            font-size: 22px;
+            font-weight: bold;
+            border: 4px solid #e0e0e0;
+            border-radius: 15px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .true-false-btn.true { color: #27ae60; }
+        .true-false-btn.false { color: #e74c3c; }
+
+        .true-false-btn:hover:not(:disabled) {
+            transform: scale(1.08);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .true-false-btn.selected { border-width: 5px; }
+
+        .true-false-btn.correct {
+            background: #27ae60;
+            color: white;
+            border-color: #27ae60;
+        }
+
+        .true-false-btn.incorrect {
+            background: #e74c3c;
+            color: white;
+            border-color: #e74c3c;
+        }
+
+        /* Slider */
+        .slider-container {
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .slider-question {
+            font-size: 18px;
+            margin-bottom: 30px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .slider-input {
+            width: 100%;
+            height: 10px;
+            border-radius: 5px;
+            background: #e0e0e0;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider-input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+        }
+
+        .slider-value {
+            text-align: center;
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+            margin-top: 20px;
+        }
+
+        /* Feedback */
+        .feedback {
+            margin-top: 25px;
+            padding: 20px 25px;
+            border-radius: 12px;
+            font-weight: 500;
+            font-size: 17px;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .feedback.show { display: block; }
+
+        .feedback.correct {
+            background: #d4edda;
+            color: #155724;
+            border: 3px solid #27ae60;
+        }
+
+        .feedback.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+            border: 3px solid #e74c3c;
+        }
+
+        /* Hint */
+        .hint-btn {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 14px 30px;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
+        }
+
+        .hint-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(243, 156, 18, 0.4);
+        }
+
+        .hint-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .hint-box {
+            background: #fff3cd;
+            border: 3px solid #f39c12;
+            border-radius: 12px;
+            padding: 20px 25px;
+            margin-top: 20px;
+            display: none;
+            color: #856404;
+            font-weight: 500;
+            font-size: 16px;
+        }
+
+        .hint-box.show { display: block; }
+        .hint-box::before { content: '💡 '; font-size: 24px; }
+
+        /* Buttons */
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 35px;
+        }
+
+        .check-btn, .next-btn, .restart-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            padding: 18px 50px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .check-btn:hover, .next-btn:hover, .restart-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .check-btn:disabled, .next-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Results */
+        .result-section {
+            text-align: center;
+            display: none;
+        }
+
+        .result-section.active { display: block; }
+
+        .result-icon {
+            font-size: 100px;
+            margin-bottom: 25px;
+            animation: bounce 1s;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .result-message {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 25px;
+        }
+
+        .score-display {
+            font-size: 72px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 35px 0;
+        }
+
+        .result-details {
+            background: #f8f9fa;
+            border-radius: 20px;
+            padding: 35px;
+            margin: 35px 0;
+        }
+
+        .score-info {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .score-badge {
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 20px;
+            color: white;
+        }
+
+        .score-badge.correct { background: #27ae60; }
+        .score-badge.incorrect { background: #e74c3c; }
+
+        .percentage-bar {
+            background: #e0e0e0;
+            height: 35px;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-top: 25px;
+        }
+
+        .percentage-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #27ae60, #2ecc71);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            transition: width 1.5s ease;
+        }
+
+        .hidden { display: none; }
+
+        @media (max-width: 768px) {
+            .matching-container { grid-template-columns: 1fr; }
+            .quiz-container { padding: 25px; }
+            h1 { font-size: 28px; }
+            .true-false-buttons { flex-direction: column; }
+            .true-false-btn { max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <h1>🔥 BWR MEGA-QUIZ 🔥</h1>
+        <p class="subtitle">Prozess der Leistungserstellung - Extended Edition mit 25 Fragen!</p>
+
+        <div class="progress-container">
+            <div class="progress-info">
+                <span class="question-counter" id="questionCounter">Frage 1 von 25</span>
+                <span class="score-counter" id="scoreCounter">Punkte: 0</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+        </div>
+
+        <div id="quizSection">
+            <span class="question-type-badge" id="questionType"></span>
+            
+            <div class="question-section">
+                <div class="question-text" id="questionText"></div>
+            </div>
+
+            <div id="questionContainer"></div>
+
+            <button class="hint-btn" id="hintBtn">
+                <span>💡</span>
+                <span>Tipp anzeigen</span>
+            </button>
+
+            <div class="hint-box" id="hintBox"></div>
+
+            <div class="feedback" id="feedback"></div>
+
+            <div class="button-container">
+                <button class="check-btn" id="checkBtn">Prüfen</button>
+                <button class="next-btn hidden" id="nextBtn">Weiter →</button>
+            </div>
+        </div>
+
+        <div class="result-section" id="resultSection">
+            <div class="result-icon" id="resultIcon"></div>
+            <div class="result-message" id="resultMessage"></div>
+            <div class="score-display" id="scoreDisplay"></div>
+            <div class="result-details">
+                <div class="score-info">
+                    <span class="score-badge correct" id="correctAnswers"></span>
+                    <span class="score-badge incorrect" id="incorrectAnswers"></span>
+                </div>
+                <div class="percentage-bar">
+                    <div class="percentage-fill" id="percentageFill">0%</div>
+                </div>
+            </div>
+            <div class="button-container">
+                <button class="restart-btn" id="restartBtn">🔄 Quiz neu starten</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const quizData = [
+            // 1. Multiple Choice
+            {
+                type: 'multiple-choice',
+                question: 'Was beschreibt die Produktionsplanung am besten?',
+                answers: ['Werbung planen', 'Herstellung von Produkten organisieren', 'Kredite beantragen', 'Verkaufsgespräche führen'],
+                correct: 1,
+                explanation: 'Die Produktionsplanung umfasst die gesamte Organisation und Planung der Herstellung von Produkten.',
+                hint: 'Überlege: Was hat mit der Produktion zu tun? Es geht um die Herstellung!'
+            },
+            // 2. Mehrfachauswahl
+            {
+                type: 'multi-select',
+                question: 'Welche der folgenden Aufgaben gehören zur Produktionsplanung? (Mehrfachauswahl möglich)',
+                answers: ['Programmplanung', 'Marketingkampagnen', 'Mengenplanung', 'Terminplanung', 'Social Media Management'],
+                correct: [0, 2, 3],
+                explanation: 'Zur Produktionsplanung gehören: Programmplanung (Was?), Mengenplanung (Wie viel?), Terminplanung (Wann?), Kapazitätsplanung und Materialbedarfsplanung.',
+                hint: 'Was muss bei der Produktion alles geplant werden? Programm, Menge, Termine...'
+            },
+            // 3. Sortieren
+            {
+                type: 'sorting',
+                question: 'Bringe die Schritte der Produktionsplanung in die richtige Reihenfolge:',
+                items: ['Programmplanung (Was wird produziert?)', 'Mengenplanung (Wie viel?)', 'Materialbedarfsplanung (Was wird benötigt?)', 'Terminplanung (Wann?)'],
+                correctOrder: [0, 1, 3, 2],
+                explanation: 'Die logische Reihenfolge: 1. Was? 2. Wie viel? 3. Wann? 4. Was wird benötigt?',
+                hint: 'Erst muss klar sein WAS und WIE VIEL produziert wird, dann WANN, und dann erst das Material.'
+            },
+            // 4. Lückentext
+            {
+                type: 'gap-text',
+                question: 'Vervollständige den Satz über Engpässe:',
+                text: 'Ein <gap>0</gap> ist die Stelle im Produktionsprozess, die die <gap>1</gap> begrenzt. Engpässe entstehen oft durch begrenzte <gap>2</gap> von Maschinen oder Personal.',
+                gaps: ['Engpass', 'Produktionsmenge', 'Kapazität'],
+                explanation: 'Ein Engpass begrenzt die Produktionsmenge durch begrenzte Kapazität.',
+                hint: 'Wie ein enger Flaschenhals begrenzt ein ... die Menge.'
+            },
+            // 5. Richtig/Falsch
+            {
+                type: 'true-false',
+                question: 'Ist diese Aussage richtig oder falsch?\n\n"Die Losgröße gibt an, wie viele Mitarbeiter in der Produktion arbeiten."',
+                correct: false,
+                explanation: 'Falsch! Die Losgröße gibt an, wie viele Stück eines Produkts in einem Fertigungsdurchlauf produziert werden.',
+                hint: 'Los = eine Charge von Produkten, nicht von Menschen!'
+            },
+            // 6. Multiple Choice
+            {
+                type: 'multiple-choice',
+                question: 'Was ist das Hauptziel der optimalen Losgröße?',
+                answers: ['Maximale Produktionsgeschwindigkeit', 'Minimierung von Rüst- und Lagerkosten', 'Maximale Gewinnspanne', 'Höchste Produktqualität'],
+                correct: 1,
+                explanation: 'Die optimale Losgröße minimiert die Summe aus Rüstkosten und Lagerhaltungskosten.',
+                hint: 'Es geht um ein Kostenoptimum zwischen zwei gegensätzlichen Kostenarten.'
+            },
+            // 7. Zuordnung
+            {
+                type: 'matching',
+                question: 'Ordne die Kennzahlen den richtigen Formeln zu:',
+                pairs: [
+                    { left: 'Produktivität', right: 'Output / Input' },
+                    { left: 'Wirtschaftlichkeit', right: 'Ertrag / Aufwand' },
+                    { left: 'Rentabilität', right: 'Gewinn / Kapital × 100' }
+                ],
+                explanation: 'Produktivität misst Effizienz, Wirtschaftlichkeit das Kosten-Nutzen-Verhältnis, Rentabilität die Kapitalverzinsung.',
+                hint: 'Produktivität → Effizienz, Wirtschaftlichkeit → Kosten vs. Nutzen, Rentabilität → Kapitalverzinsung'
+            },
+            // 8. Mehrfachauswahl
+            {
+                type: 'multi-select',
+                question: 'Welche Vorteile haben GROSSE Losgrößen? (Mehrfachauswahl)',
+                answers: ['Geringe Rüstkosten pro Stück', 'Hohe Flexibilität', 'Seltenes Umrüsten', 'Geringe Lagerkosten', 'Hohe Effizienz'],
+                correct: [0, 2, 4],
+                explanation: 'Große Losgrößen: geringe Rüstkosten pro Stück, seltenes Umrüsten, hohe Effizienz. ABER: hohe Lagerkosten, geringe Flexibilität!',
+                hint: 'Wenn viel auf einmal produziert wird, sind die Rüstkosten pro Stück niedrig...'
+            },
+            // 9. Lückentext
+            {
+                type: 'gap-text',
+                question: 'Vervollständige den Satz über Produktivität:',
+                text: 'Die Produktivität wird berechnet als <gap>0</gap> geteilt durch <gap>1</gap>. Eine hohe Produktivität bedeutet, dass <gap>2</gap> effizient eingesetzt werden.',
+                gaps: ['Output', 'Input', 'Ressourcen'],
+                explanation: 'Produktivität = Output / Input. Sie zeigt die Effizienz des Ressourceneinsatzes.',
+                hint: 'Was kommt raus (Output) im Verhältnis zu dem, was reingesteckt wird (Input)?'
+            },
+            // 10. Richtig/Falsch
+            {
+                type: 'true-false',
+                question: 'Ist diese Aussage richtig oder falsch?\n\n"Wirtschaftlichkeit > 1 bedeutet, dass ein Unternehmen unwirtschaftlich arbeitet."',
+                correct: false,
+                explanation: 'Falsch! Wirtschaftlichkeit > 1 bedeutet WIRTSCHAFTLICH (Ertrag > Aufwand). < 1 wäre unwirtschaftlich.',
+                hint: 'Wenn der Ertrag größer als der Aufwand ist, ist das gut oder schlecht?'
+            },
+            // 11. Sortieren
+            {
+                type: 'sorting',
+                question: 'Sortiere die Qualitätskontrollen nach dem Zeitpunkt im Produktionsprozess:',
+                items: ['Endkontrolle', 'Wareneingangskontrolle', 'Zwischenprüfung'],
+                correctOrder: [1, 2, 0],
+                explanation: 'Richtige Reihenfolge: 1. Wareneingangskontrolle (Material kommt an), 2. Zwischenprüfung (während Produktion), 3. Endkontrolle (fertiges Produkt).',
+                hint: 'Was passiert zuerst? Das Material kommt an! Was zuletzt? Das fertige Produkt!'
+            },
+            // 12. Multiple Choice
+            {
+                type: 'multiple-choice',
+                question: 'Wodurch entstehen Qualitätskosten HAUPTSÄCHLICH?',
+                answers: ['Durch erfolgreiche Werbung', 'Durch Ausschuss und Nacharbeit', 'Durch hohe Gehälter', 'Durch Maschinenabschreibungen'],
+                correct: 1,
+                explanation: 'Qualitätskosten entstehen durch Ausschuss, Nacharbeit, Rücksendungen, Garantiefälle und Rufschäden.',
+                hint: 'Was kostet Geld, wenn die Qualität schlecht ist? Fehlerhafte Teile müssen...'
+            },
+            // 13. Zuordnung
+            {
+                type: 'matching',
+                question: 'Ordne die Personalmaßnahmen ihrer Härte zu (von mild bis hart):',
+                pairs: [
+                    { left: 'Mildeste Maßnahme', right: 'Überstundenabbau' },
+                    { left: 'Mittlere Maßnahme', right: 'Kurzarbeit' },
+                    { left: 'Härteste Maßnahme', right: 'Kündigung' }
+                ],
+                explanation: 'Eskalationsstufen: 1. Überstundenabbau, 2. Kurzarbeit, 3. Einstellungsstopp, 4. Kündigungen.',
+                hint: 'Welche Maßnahme trifft die Mitarbeiter am wenigsten? Welche am stärksten?'
+            },
+            // 14. Richtig/Falsch
+            {
+                type: 'true-false',
+                question: 'Ist diese Aussage richtig oder falsch?\n\n"Kurzarbeit ist eine dauerhafte Reduzierung der Arbeitszeit."',
+                correct: false,
+                explanation: 'Falsch! Kurzarbeit ist eine VORÜBERGEHENDE Reduzierung der Arbeitszeit bei Auftragsmangel.',
+                hint: 'Das Wort "Kurz" deutet auf eine bestimmte Dauer hin...'
+            },
+            // 15. Lückentext
+            {
+                type: 'gap-text',
+                question: 'Vervollständige den Satz über Durchlaufzeit:',
+                text: 'Die <gap>0</gap> ist die Zeit vom <gap>1</gap> der Produktion bis zum fertigen <gap>2</gap>. Sie setzt sich zusammen aus Bearbeitungszeit, Transportzeit und Liegezeit.',
+                gaps: ['Durchlaufzeit', 'Start', 'Produkt'],
+                explanation: 'Die Durchlaufzeit misst die gesamte Zeit, die ein Produkt durch den Produktionsprozess läuft.',
+                hint: 'Ein Produkt "läuft durch" die Produktion - wie lange dauert das?'
+            },
+            // 16. Mehrfachauswahl
+            {
+                type: 'multi-select',
+                question: 'Welche Faktoren beeinflussen die Kapazität einer Produktion? (Mehrfachauswahl)',
+                answers: ['Maschinenstunden', 'Werbebudget', 'Personalstunden', 'Social Media Follower', 'Schichtanzahl'],
+                correct: [0, 2, 4],
+                explanation: 'Kapazität wird beeinflusst durch: Maschinenstunden, Personalstunden, Schichten, Rüstzeiten, technische Ausstattung.',
+                hint: 'Was begrenzt, wie viel produziert werden kann? Maschinen, Personal, Zeit...'
+            },
+            // 17. Multiple Choice
+            {
+                type: 'multiple-choice',
+                question: 'Was ist ein Engpass in der Produktion?',
+                answers: ['Ein großer Lagerraum', 'Eine Stelle, die die Produktionsmenge begrenzt', 'Eine Qualitätsprüfung', 'Ein wichtiger Absatzmarkt'],
+                correct: 1,
+                explanation: 'Ein Engpass ist die Stelle im Produktionsprozess, die die Gesamtproduktionsmenge begrenzt (z.B. eine Maschine mit begrenzter Kapazität).',
+                hint: 'Wie bei einem engen Flaschenhals - was passiert mit dem Durchfluss?'
+            },
+            // 18. Sortieren
+            {
+                type: 'sorting',
+                question: 'Sortiere die Fertigungstypen nach der Stückzahl (von wenig bis viel):',
+                items: ['Massenfertigung', 'Einzelfertigung', 'Serienfertigung'],
+                correctOrder: [1, 2, 0],
+                explanation: 'Reihenfolge nach Stückzahl: Einzelfertigung (1 Stück) → Serienfertigung (begrenzte Menge) → Massenfertigung (sehr viele Stück).',
+                hint: 'Einzel = 1 Stück, Serie = mehrere, Masse = sehr viele!'
+            },
+            // 19. Richtig/Falsch
+            {
+                type: 'true-false',
+                question: 'Ist diese Aussage richtig oder falsch?\n\n"Rüstzeit ist die Zeit, die benötigt wird, um eine Maschine von einem Produkt auf ein anderes umzustellen."',
+                correct: true,
+                explanation: 'Richtig! Rüstzeit ist die Zeit zum Umrüsten/Umstellen einer Maschine oder eines Arbeitsplatzes.',
+                hint: 'Wenn die Produktion umgestellt wird, muss die Maschine "gerüstet" werden.'
+            },
+            // 20. Lückentext
+            {
+                type: 'gap-text',
+                question: 'Vervollständige den Satz über Rentabilität:',
+                text: 'Die Rentabilität zeigt, wie gut das eingesetzte <gap>0</gap> "arbeitet". Sie wird berechnet als <gap>1</gap> geteilt durch Kapital mal <gap>2</gap>.',
+                gaps: ['Kapital', 'Gewinn', '100'],
+                explanation: 'Rentabilität = (Gewinn / Kapital) × 100. Sie zeigt die "Verzinsung" des eingesetzten Kapitals.',
+                hint: 'Rentabilität hat mit Kapital zu tun - wie gut verzinst es sich?'
+            },
+            // 21. Zuordnung
+            {
+                type: 'matching',
+                question: 'Ordne die Begriffe den richtigen Definitionen zu:',
+                pairs: [
+                    { left: 'Losgröße', right: 'Stückzahl pro Fertigungsdurchlauf' },
+                    { left: 'Kapazität', right: 'Leistungsvermögen der Produktion' },
+                    { left: 'Auslastung', right: 'Anteil der genutzten Kapazität' }
+                ],
+                explanation: 'Losgröße = wie viele Stück, Kapazität = wie viel möglich, Auslastung = wie viel davon genutzt.',
+                hint: 'Kapazität = Maximum, Auslastung = wie viel davon wird genutzt, Losgröße = Stückzahl'
+            },
+            // 22. Multiple Choice
+            {
+                type: 'multiple-choice',
+                question: 'Wann findet die Wareneingangskontrolle statt?',
+                answers: ['Beim Verkauf der Ware', 'Beim Eingang von Material', 'Nach dem Versand', 'Beim Marketing'],
+                correct: 1,
+                explanation: 'Die Wareneingangskontrolle prüft eingehende Materialien auf Menge, Qualität und Beschädigungen.',
+                hint: 'Das Wort sagt es: Wann geht die Ware EIN?'
+            },
+            // 23. Mehrfachauswahl
+            {
+                type: 'multi-select',
+                question: 'Welche Ziele hat das Qualitätsmanagement? (Mehrfachauswahl)',
+                answers: ['Fehler reduzieren', 'Kosten erhöhen', 'Ausschuss senken', 'Reklamationen reduzieren', 'Lagerbestände maximieren'],
+                correct: [0, 2, 3],
+                explanation: 'Ziele des QM: Fehler reduzieren, Ausschuss senken, Nacharbeit vermeiden, Reklamationen reduzieren, Image verbessern.',
+                hint: 'Qualität soll besser werden - was bedeutet das für Fehler, Ausschuss, Reklamationen?'
+            },
+            // 24. Richtig/Falsch
+            {
+                type: 'true-false',
+                question: 'Ist diese Aussage richtig oder falsch?\n\n"Eine hohe Auslastung der Maschinen führt automatisch zu niedrigen Stückkosten."',
+                correct: true,
+                explanation: 'Richtig! Bei hoher Auslastung verteilen sich die Fixkosten (z.B. Abschreibungen) auf mehr Stück, was die Stückkosten senkt.',
+                hint: 'Wenn Fixkosten auf viele Stück verteilt werden, sinken die Kosten pro Stück.'
+            },
+            // 25. Lückentext
+            {
+                type: 'gap-text',
+                question: 'Vervollständige den Satz über Zielkonflikte:',
+                text: 'In der Produktion gibt es oft <gap>0</gap> zwischen verschiedenen Zielen. Zum Beispiel: Hohe <gap>1</gap> bedeuten gute Lieferfähigkeit, aber auch hohe <gap>2</gap>.',
+                gaps: ['Zielkonflikte', 'Lagerbestände', 'Kosten'],
+                explanation: 'Zielkonflikte: hohe Lagerbestände = gute Lieferfähigkeit aber hohe Kosten; niedrige Lager = geringe Kosten aber Lieferrisiko.',
+                hint: 'Wenn du viel lagerst, kannst du immer liefern, aber es kostet Geld...'
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let answered = false;
+        let userAnswer = null;
+        let hintUsed = false;
+
+        const questionCounterEl = document.getElementById('questionCounter');
+        const scoreCounterEl = document.getElementById('scoreCounter');
+        const questionTypeEl = document.getElementById('questionType');
+        const questionTextEl = document.getElementById('questionText');
+        const questionContainer = document.getElementById('questionContainer');
+        const checkBtn = document.getElementById('checkBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const hintBtn = document.getElementById('hintBtn');
+        const hintBox = document.getElementById('hintBox');
+        const feedbackEl = document.getElementById('feedback');
+        const progressBar = document.getElementById('progressBar');
+        const quizSection = document.getElementById('quizSection');
+        const resultSection = document.getElementById('resultSection');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const resultMessage = document.getElementById('resultMessage');
+        const resultIcon = document.getElementById('resultIcon');
+        const correctAnswersEl = document.getElementById('correctAnswers');
+        const incorrectAnswersEl = document.getElementById('incorrectAnswers');
+        const percentageFill = document.getElementById('percentageFill');
+        const restartBtn = document.getElementById('restartBtn');
+
+        function loadQuestion() {
+            const question = quizData[currentQuestion];
+            answered = false;
+            userAnswer = null;
+            hintUsed = false;
+
+            questionCounterEl.textContent = `Frage ${currentQuestion + 1} von ${quizData.length}`;
+            questionTextEl.textContent = question.question;
+            
+            const typeLabels = {
+                'multiple-choice': '📝 Multiple Choice',
+                'multi-select': '☑️ Mehrfachauswahl',
+                'gap-text': '✏️ Lückentext',
+                'true-false': '✓/✗ Richtig oder Falsch',
+                'matching': '🔗 Zuordnung',
+                'sorting': '🔢 Sortieren'
+            };
+            questionTypeEl.textContent = typeLabels[question.type];
+
+            questionContainer.innerHTML = '';
+            feedbackEl.classList.remove('show', 'correct', 'incorrect');
+            hintBox.classList.remove('show');
+            hintBox.textContent = '';
+            hintBtn.disabled = false;
+            checkBtn.disabled = false;
+            checkBtn.classList.remove('hidden');
+            nextBtn.classList.add('hidden');
+
+            if (question.type === 'multiple-choice') renderMultipleChoice(question);
+            else if (question.type === 'multi-select') renderMultiSelect(question);
+            else if (question.type === 'gap-text') renderGapText(question);
+            else if (question.type === 'true-false') renderTrueFalse(question);
+            else if (question.type === 'matching') renderMatching(question);
+            else if (question.type === 'sorting') renderSorting(question);
+
+            updateProgressBar();
+        }
+
+        function renderMultipleChoice(question) {
+            const answersDiv = document.createElement('div');
+            answersDiv.className = 'answers';
+            question.answers.forEach((answer, index) => {
+                const button = document.createElement('button');
+                button.className = 'answer-btn';
+                button.textContent = answer;
+                button.onclick = () => {
+                    if (answered) return;
+                    userAnswer = index;
+                    answersDiv.querySelectorAll('.answer-btn').forEach(btn => btn.classList.remove('selected'));
+                    button.classList.add('selected');
+                    checkBtn.disabled = false;
+                };
+                answersDiv.appendChild(button);
+            });
+            questionContainer.appendChild(answersDiv);
+        }
+
+        function renderMultiSelect(question) {
+            const answersDiv = document.createElement('div');
+            answersDiv.className = 'answers';
+            userAnswer = [];
+            
+            question.answers.forEach((answer, index) => {
+                const button = document.createElement('button');
+                button.className = 'answer-btn multi-select-btn';
+                button.textContent = answer;
+                button.onclick = () => {
+                    if (answered) return;
+                    button.classList.toggle('selected');
+                    if (userAnswer.includes(index)) {
+                        userAnswer = userAnswer.filter(i => i !== index);
+                    } else {
+                        userAnswer.push(index);
+                    }
+                    checkBtn.disabled = userAnswer.length === 0;
+                };
+                answersDiv.appendChild(button);
+            });
+            questionContainer.appendChild(answersDiv);
+        }
+
+        function renderGapText(question) {
+            const container = document.createElement('div');
+            container.className = 'gap-text-container';
+            let html = question.text;
+            question.gaps.forEach((gap, index) => {
+                html = html.replace(`<gap>${index}</gap>`, 
+                    `<input type="text" class="gap-input" data-index="${index}" placeholder="...">`);
+            });
+            container.innerHTML = html;
+            questionContainer.appendChild(container);
+            
+            const inputs = container.querySelectorAll('.gap-input');
+            inputs.forEach(input => {
+                input.addEventListener('input', () => {
+                    const allFilled = Array.from(inputs).every(inp => inp.value.trim() !== '');
+                    checkBtn.disabled = !allFilled;
+                });
+            });
+        }
+
+        function renderTrueFalse(question) {
+            const container = document.createElement('div');
+            container.className = 'true-false-buttons';
+            
+            const trueBtn = document.createElement('button');
+            trueBtn.className = 'true-false-btn true';
+            trueBtn.innerHTML = '✓<br>RICHTIG';
+            trueBtn.onclick = () => {
+                if (answered) return;
+                userAnswer = true;
+                container.querySelectorAll('.true-false-btn').forEach(btn => btn.classList.remove('selected'));
+                trueBtn.classList.add('selected');
+                checkBtn.disabled = false;
+            };
+            
+            const falseBtn = document.createElement('button');
+            falseBtn.className = 'true-false-btn false';
+            falseBtn.innerHTML = '✗<br>FALSCH';
+            falseBtn.onclick = () => {
+                if (answered) return;
+                userAnswer = false;
+                container.querySelectorAll('.true-false-btn').forEach(btn => btn.classList.remove('selected'));
+                falseBtn.classList.add('selected');
+                checkBtn.disabled = false;
+            };
+            
+            container.appendChild(trueBtn);
+            container.appendChild(falseBtn);
+            questionContainer.appendChild(container);
+        }
+
+        function renderMatching(question) {
+            const container = document.createElement('div');
+            container.className = 'matching-container';
+            
+            const leftColumn = document.createElement('div');
+            leftColumn.className = 'matching-column';
+            leftColumn.innerHTML = '<h3>Begriffe</h3>';
+            
+            question.pairs.forEach((pair, index) => {
+                const item = document.createElement('div');
+                item.className = 'matching-item';
+                item.textContent = pair.left;
+                item.draggable = true;
+                item.dataset.index = index;
+                item.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', index);
+                    item.classList.add('dragging');
+                });
+                item.addEventListener('dragend', () => item.classList.remove('dragging'));
+                leftColumn.appendChild(item);
+            });
+            
+            const rightColumn = document.createElement('div');
+            rightColumn.className = 'matching-column';
+            rightColumn.innerHTML = '<h3>Definitionen</h3>';
+            
+            question.pairs.forEach((pair, index) => {
+                const dropZone = document.createElement('div');
+                dropZone.className = 'drop-zone';
+                dropZone.dataset.correctIndex = index;
+                
+                const label = document.createElement('div');
+                label.className = 'drop-label';
+                label.textContent = pair.right;
+                dropZone.appendChild(label);
+                
+                dropZone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    dropZone.classList.add('drag-over');
+                });
+                dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+                dropZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    dropZone.classList.remove('drag-over');
+                    const draggedIndex = e.dataTransfer.getData('text/plain');
+                    const draggedItem = leftColumn.querySelector(`[data-index="${draggedIndex}"]`);
+                    if (draggedItem && !answered) {
+                        const existing = dropZone.querySelector('.matching-item');
+                        if (existing) leftColumn.appendChild(existing);
+                        dropZone.appendChild(draggedItem.cloneNode(true));
+                        draggedItem.style.opacity = '0.3';
+                        dropZone.classList.add('filled');
+                        const allFilled = Array.from(rightColumn.querySelectorAll('.drop-zone'))
+                            .every(zone => zone.querySelector('.matching-item'));
+                        checkBtn.disabled = !allFilled;
+                    }
+                });
+                rightColumn.appendChild(dropZone);
+            });
+            
+            container.appendChild(leftColumn);
+            container.appendChild(rightColumn);
+            questionContainer.appendChild(container);
+        }
+
+        function renderSorting(question) {
+            const container = document.createElement('div');
+            container.className = 'sorting-container';
+            
+            question.items.forEach((item, index) => {
+                const sortItem = document.createElement('div');
+                sortItem.className = 'sorting-item';
+                sortItem.textContent = item;
+                sortItem.draggable = true;
+                sortItem.dataset.index = index;
+                
+                sortItem.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', index);
+                    sortItem.classList.add('dragging');
+                });
+                sortItem.addEventListener('dragend', () => sortItem.classList.remove('dragging'));
+                
+                sortItem.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    const dragging = container.querySelector('.dragging');
+                    const siblings = [...container.querySelectorAll('.sorting-item:not(.dragging)')];
+                    const nextSibling = siblings.find(sibling => {
+                        const box = sibling.getBoundingClientRect();
+                        return e.clientY < box.top + box.height / 2;
+                    });
+                    container.insertBefore(dragging, nextSibling);
+                });
+                
+                container.appendChild(sortItem);
+            });
+            
+            questionContainer.appendChild(container);
+            checkBtn.disabled = false;
+        }
+
+        function checkAnswer() {
+            if (answered) return;
+            answered = true;
+            const question = quizData[currentQuestion];
+            let isCorrect = false;
+            
+            if (question.type === 'multiple-choice') {
+                isCorrect = userAnswer === question.correct;
+                const buttons = questionContainer.querySelectorAll('.answer-btn');
+                buttons.forEach((btn, i) => {
+                    btn.disabled = true;
+                    if (i === question.correct) btn.classList.add('correct');
+                    if (i === userAnswer && !isCorrect) btn.classList.add('incorrect');
+                });
+            } else if (question.type === 'multi-select') {
+                userAnswer.sort((a, b) => a - b);
+                const correct = [...question.correct].sort((a, b) => a - b);
+                isCorrect = JSON.stringify(userAnswer) === JSON.stringify(correct);
+                const buttons = questionContainer.querySelectorAll('.answer-btn');
+                buttons.forEach((btn, i) => {
+                    btn.disabled = true;
+                    if (question.correct.includes(i)) btn.classList.add('correct');
+                    if (userAnswer.includes(i) && !question.correct.includes(i)) btn.classList.add('incorrect');
+                });
+            } else if (question.type === 'gap-text') {
+                const inputs = questionContainer.querySelectorAll('.gap-input');
+                isCorrect = true;
+                inputs.forEach((input, index) => {
+                    const correctAnswer = question.gaps[index].toLowerCase().trim();
+                    const userInput = input.value.toLowerCase().trim();
+                    if (userInput === correctAnswer) {
+                        input.classList.add('correct');
+                    } else {
+                        input.classList.add('incorrect');
+                        input.value = question.gaps[index];
+                        isCorrect = false;
+                    }
+                    input.disabled = true;
+                });
+            } else if (question.type === 'true-false') {
+                isCorrect = userAnswer === question.correct;
+                const buttons = questionContainer.querySelectorAll('.true-false-btn');
+                buttons.forEach((btn, i) => {
+                    btn.disabled = true;
+                    const btnValue = i === 0;
+                    if (btnValue === question.correct) btn.classList.add('correct');
+                    if (btnValue === userAnswer && !isCorrect) btn.classList.add('incorrect');
+                });
+            } else if (question.type === 'matching') {
+                const dropZones = questionContainer.querySelectorAll('.drop-zone');
+                isCorrect = true;
+                dropZones.forEach(zone => {
+                    const item = zone.querySelector('.matching-item');
+                    if (item) {
+                        const droppedIndex = item.dataset.index;
+                        const correctIndex = zone.dataset.correctIndex;
+                        if (droppedIndex === correctIndex) {
+                            zone.classList.add('correct');
+                        } else {
+                            zone.classList.add('incorrect');
+                            isCorrect = false;
+                        }
+                    }
+                });
+            } else if (question.type === 'sorting') {
+                const items = questionContainer.querySelectorAll('.sorting-item');
+                const currentOrder = Array.from(items).map(item => parseInt(item.dataset.index));
+                isCorrect = JSON.stringify(currentOrder) === JSON.stringify(question.correctOrder);
+                items.forEach((item, i) => {
+                    if (parseInt(item.dataset.index) === question.correctOrder[i]) {
+                        item.classList.add('correct');
+                    } else {
+                        item.classList.add('incorrect');
+                        isCorrect = false;
+                    }
+                });
+            }
+            
+            if (isCorrect) {
+                score++;
+                scoreCounterEl.textContent = `Punkte: ${score}`;
+                feedbackEl.textContent = '✓ Richtig! ' + question.explanation;
+                feedbackEl.classList.add('show', 'correct');
+            } else {
+                feedbackEl.textContent = '✗ Falsch. ' + question.explanation;
+                feedbackEl.classList.add('show', 'incorrect');
+            }
+            
+            hintBtn.disabled = true;
+            checkBtn.classList.add('hidden');
+            nextBtn.classList.remove('hidden');
+        }
+
+        function updateProgressBar() {
+            const progress = ((currentQuestion + 1) / quizData.length) * 100;
+            progressBar.style.width = progress + '%';
+        }
+
+        function showResults() {
+            quizSection.classList.add('hidden');
+            resultSection.classList.add('active');
+            const percentage = Math.round((score / quizData.length) * 100);
+            const incorrect = quizData.length - score;
+            
+            scoreDisplay.textContent = `${score} / ${quizData.length}`;
+            correctAnswersEl.textContent = `✓ ${score} Richtig`;
+            incorrectAnswersEl.textContent = `✗ ${incorrect} Falsch`;
+
+            setTimeout(() => {
+                percentageFill.style.width = percentage + '%';
+                percentageFill.textContent = percentage + '%';
+            }, 100);
+
+            if (percentage === 100) {
+                resultIcon.textContent = '🏆';
+                resultMessage.textContent = 'PERFEKT! Absolute Meisterleistung!';
+                percentageFill.style.background = 'linear-gradient(90deg, #f39c12, #f1c40f)';
+            } else if (percentage >= 80) {
+                resultIcon.textContent = '🎉';
+                resultMessage.textContent = 'Hervorragend! Sehr gut gemacht!';
+            } else if (percentage >= 60) {
+                resultIcon.textContent = '👍';
+                resultMessage.textContent = 'Gut! Solide Leistung!';
+            } else if (percentage >= 40) {
+                resultIcon.textContent = '📚';
+                resultMessage.textContent = 'Okay, aber da geht noch mehr!';
+            } else {
+                resultIcon.textContent = '💪';
+                resultMessage.textContent = 'Weiter lernen und nochmal versuchen!';
+            }
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            answered = false;
+            userAnswer = null;
+            scoreCounterEl.textContent = 'Punkte: 0';
+            quizSection.classList.remove('hidden');
+            resultSection.classList.remove('active');
+            loadQuestion();
+        }
+
+        checkBtn.addEventListener('click', checkAnswer);
+        nextBtn.addEventListener('click', () => {
+            currentQuestion++;
+            if (currentQuestion < quizData.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        });
+        hintBtn.addEventListener('click', () => {
+            if (!hintUsed && !answered) {
+                hintBox.textContent = quizData[currentQuestion].hint;
+                hintBox.classList.add('show');
+                hintUsed = true;
+                hintBtn.disabled = true;
+            }
+        });
+        restartBtn.addEventListener('click', restartQuiz);
+
+        loadQuestion();
+    </script>
+</body>
+</html>
